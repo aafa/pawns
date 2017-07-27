@@ -1,12 +1,13 @@
-import com.sun.tools.jdeps.Analyzer.Visitor
+import Main.{Cell, CheckBoard}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.util.Random
 
 object Main {
 
   type Size = Int // assume square board
-  type CellValue = Boolean // isVisited
+  type CellValue = Boolean // cell state; isVisited
   type Cell = (Size, Size) // cell coordinates (x,y)
 
   case class CheckBoard(boardSize: Size) {
@@ -18,7 +19,8 @@ object Main {
       board.values.size == cellsCount &&
         board.values.forall(_ == true)
 
-    def percentageVisited: Float = board.values.count(_ == true).toFloat / cellsCount
+    def percentageVisited: Float =
+      board.values.count(_ == true).toFloat / cellsCount
 
     def isVisited(key: Cell): Boolean = board.getOrElse(key, false)
 
@@ -39,33 +41,38 @@ object Main {
       }
 
       moves.filter {
-        case (x, y) => x >= 0 && y >= 0 && x <= boardSize && y <= boardSize
+        case (x, y) => x >= 0 && y >= 0 && x < boardSize && y < boardSize
       }
     }
 
-    def bestNextMove(key: Cell): Option[Cell] =
-      possibleMove(key).filterNot(isVisited).headOption // todo think of better strategy
   }
+}
 
-  class Visitor(val cb: CheckBoard) {
-    def visitFrom(startingCell: Cell): Unit = {
-      @tailrec def visitNext(key: Cell): Unit = {
-        println(s"visitted $key")
+abstract class Visitor(cb: CheckBoard) {
+  def nextMove(key: Cell): Option[Cell]
 
-        cb.visit(key)
+  def visitFrom(startingCell: Cell): Unit = {
+    @tailrec def visitNext(key: Cell): Unit = {
+      println(s"visited $key")
 
-        if (!cb.allVisited) {
-          cb.bestNextMove(key) match {
-            case Some(move) => visitNext(move)
-            case None => print(s"not all visited, only ${cb.percentageVisited}")
-          }
+      cb.visit(key)
 
-
+      if (!cb.allVisited) {
+        nextMove(key) match {
+          case Some(move) => visitNext(move)
+          case None       => print(s"not all visited, only ${cb.percentageVisited}")
         }
       }
-
-      visitNext(startingCell)
-
     }
+
+    visitNext(startingCell)
+
   }
+}
+
+// todo think of better strategy
+class RandomVisitor(cb: CheckBoard) extends Visitor(cb) {
+  def nextMove(key: Cell): Option[Cell] = Random
+    .shuffle(cb.possibleMove(key))
+    .lastOption
 }
