@@ -10,18 +10,47 @@ class CheckBoardSpec extends FunSpec with MustMatchers {
 
   it("should know if all cells are visited") {
     val cb = CheckBoard(boardSize = 2)
-    val list = List[Cell]((0, 0), (0, 1), (1, 0))
-    list.foreach(e => cb.visit(e))
+    val v = new RandomVisitor(cb)
 
-    cb.allVisited must ===(false)
-    cb.visit((1, 1))
-    cb.allVisited must ===(true)
+    val list = List[Cell]((0, 0), (0, 1), (1, 0))
+    list.foreach(e => v.visit(e))
+
+    v.allVisited must ===(false)
+    v.visit((1, 1))
+    v.allVisited must ===(true)
   }
 
-  it("visitor should do work") {
+  it("random visitor should do work") {
     val v = new RandomVisitor(cb)
     v.visitAll((0, 0))
 
-    cb.allVisited must ===(true)
+    v.allVisited must ===(true)
+  }
+
+  it("WarnsdorfVisitor should do work") {
+    val v = new WarnsdorfVisitor(cb)
+    v.visitAll((0, 0))
+
+    v.allVisited must ===(true)
+  }
+
+  it("WarnsdorfVisitor performance") {
+    new WarnsdorfVisitor(cb){
+      visitAll((0, 0))
+      allVisited must ===(true)
+
+      println(steps.size)
+      steps.size must be < (10*cellsToVisit )
+    }
+
+    new WarnsdorfVisitor(cb){
+      visitAll((4, 8))
+      allVisited must ===(true)
+
+      println(steps.size)
+      steps.size must be < (15*cellsToVisit)
+    }
+
+    // complexity nearly linear, within ~O(15*n) for the worst case
   }
 }

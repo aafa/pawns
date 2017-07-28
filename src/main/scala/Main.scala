@@ -1,4 +1,4 @@
-import Main.{Cell, CheckBoard}
+import Main.{Cell, CheckBoard, Size}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -7,24 +7,21 @@ import scala.util.Random
 object Main {
 
   type Size = Int // assume square board
-  type CellValue = Boolean // cell state; isVisited
   type Cell = (Size, Size) // cell coordinates (x,y)
+  type CellNeighbours = Seq[Cell] // adjacent cells
 
   case class CheckBoard(boardSize: Size) {
-    private val board = mutable.Map.empty[Cell, CellValue]
-    private val cellsCount = boardSize * boardSize
+    private val board: Map[Cell, CellNeighbours] =
+      Seq
+        .tabulate(boardSize, boardSize) {
+          case (x, y) => (x, y) -> nextMoves((x, y))
+        }
+        .flatten
+        .toMap[Cell, CellNeighbours]
 
-    def visit(key: Cell): Unit = board.put(key, true)
-    def allVisited: Boolean =
-      board.values.size == cellsCount &&
-        board.values.forall(_ == true)
+    def possibleMoves(key: Cell): CellNeighbours = board.getOrElse(key, Seq.empty)
 
-    def percentageVisited: Float =
-      board.values.count(_ == true).toFloat / cellsCount
-
-    def isVisited(key: Cell): Boolean = board.getOrElse(key, false)
-
-    def possibleMoves(key: Cell): Seq[Cell] = {
+    private def nextMoves(key: Cell): Seq[Cell] = {
       val moves: Seq[Cell] = key match {
         // starting from N - going CW
         case (x, y) =>
@@ -49,7 +46,7 @@ object Main {
 }
 
 abstract class Visitor(cb: CheckBoard) {
-  var stepsCounter = 0
+  val cellsToVisit = cb.boardSize * cb.boardSize
   var steps = mutable.ArrayBuffer.empty[Cell]
 
   def startWalking(cell: Cell): Unit = {
@@ -58,30 +55,39 @@ abstract class Visitor(cb: CheckBoard) {
 
   def isVisited(cell: Cell): Boolean = steps.contains(cell)
 
+  def allVisited: Boolean = steps.toSet.size == cellsToVisit
+
+  def percentageVisited: Float =
+    steps.toSet.size.toFloat / cellsToVisit
+
   def step(): Option[Cell] = {
-    cb.allVisited match {
-      case false if steps.nonEmpty => nextMove(steps.last).map(c => {
-        steps.append(c)
-        c
-      })
+    allVisited match {
+      case false if steps.nonEmpty =>
+        nextMove(steps.last).map(c => {
+          steps.append(c)
+          c
+        })
       case _ => None
     }
   }
+
+  def visit(key: Cell): Unit = steps.append(key)
 
   def visitAll(startingCell: Cell): Unit = {
     @tailrec def visitNext(key: Cell): Unit = {
       println(s"visited $key")
 
-      cb.visit(key)
+      visit(key)
 
-      if (!cb.allVisited) {
-        nextMove(key) match {
+      if (!allVisited) {
+        step() match {
           case Some(move) => visitNext(move)
-          case None       => print(s"not all visited, only ${cb.percentageVisited}")
+          case None       => print(s"not all visited, only $percentageVisited")
         }
       }
     }
 
+    startWalking(startingCell)
     visitNext(startingCell)
 
   }
@@ -90,9 +96,20 @@ abstract class Visitor(cb: CheckBoard) {
 }
 
 // todo think of better strategy
-case class RandomVisitor(cb: CheckBoard) extends Visitor(cb) {
+class RandomVisitor(cb: CheckBoard) extends Visitor(cb) {
   def nextMove(key: Cell): Option[Cell] =
     Random
       .shuffle(cb.possibleMoves(key))
       .lastOption
+}
+
+class WarnsdorfVisitor(cb: CheckBoard) extends RandomVisitor(cb) {
+  override def nextMove(key: Cell): Option[Cell] = {
+    val cells = cb.possibleMoves(key).filterNot(isVisited)
+    if (cells.isEmpty) {
+      super.nextMove(key)
+    } else {
+      Option(cells.minBy(cell => cb.possibleMoves(cell).size))
+    }
+  }
 }

@@ -19,16 +19,16 @@ object CheckBoardUi extends JSApp{
 
   @JSExport
   def main(b: html.Body): Unit = {
-    val visitor = RandomVisitor(CheckBoard(boardSize = boxSize))
+    val visitor = new WarnsdorfVisitor(CheckBoard(boardSize = boxSize))
 
     renderContent(b, visitor)
     dom.window.setInterval(() => {
       visitor.step()
       renderContent(b, visitor)
-    }, 100)
+    }, 50)
   }
 
-  private def renderContent(body: html.Body, visitor: RandomVisitor) = {
+  private def renderContent(body: html.Body, visitor: Visitor) = {
     body.innerHTML = ""
     type CellView   = JsDom.TypedTag[HTMLElement]
 
@@ -51,7 +51,7 @@ object CheckBoardUi extends JSApp{
           `class` := "grid-10",
           filler
         ),
-        p("version: 2")
+        p("version: 3")
       ).render
     )
   }
