@@ -83,7 +83,7 @@ object CheckBoardUi extends JSApp {
           `class` := "grid-11",
           filler
         ),
-        p("version: 4")
+        p("version: 5")
       ).render
     )
   }
