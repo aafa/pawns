@@ -20,7 +20,7 @@ class CheckBoardSpec extends FunSpec with MustMatchers {
 
   it("visitor should do work") {
     val v = new RandomVisitor(cb)
-    v.visitFrom((0, 0))
+    v.visitAll((0, 0))
 
     cb.allVisited must ===(true)
   }

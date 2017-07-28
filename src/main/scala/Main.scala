@@ -24,7 +24,7 @@ object Main {
 
     def isVisited(key: Cell): Boolean = board.getOrElse(key, false)
 
-    def possibleMove(key: Cell): Seq[Cell] = {
+    def possibleMoves(key: Cell): Seq[Cell] = {
       val moves: Seq[Cell] = key match {
         // starting from N - going CW
         case (x, y) =>
@@ -49,9 +49,26 @@ object Main {
 }
 
 abstract class Visitor(cb: CheckBoard) {
-  def nextMove(key: Cell): Option[Cell]
+  var stepsCounter = 0
+  var steps = mutable.ArrayBuffer.empty[Cell]
 
-  def visitFrom(startingCell: Cell): Unit = {
+  def startWalking(cell: Cell): Unit = {
+    steps = mutable.ArrayBuffer(cell)
+  }
+
+  def isVisited(cell: Cell): Boolean = steps.contains(cell)
+
+  def step(): Option[Cell] = {
+    cb.allVisited match {
+      case false if steps.nonEmpty => nextMove(steps.last).map(c => {
+        steps.append(c)
+        c
+      })
+      case _ => None
+    }
+  }
+
+  def visitAll(startingCell: Cell): Unit = {
     @tailrec def visitNext(key: Cell): Unit = {
       println(s"visited $key")
 
@@ -68,11 +85,14 @@ abstract class Visitor(cb: CheckBoard) {
     visitNext(startingCell)
 
   }
+
+  def nextMove(key: Cell): Option[Cell]
 }
 
 // todo think of better strategy
-class RandomVisitor(cb: CheckBoard) extends Visitor(cb) {
-  def nextMove(key: Cell): Option[Cell] = Random
-    .shuffle(cb.possibleMove(key))
-    .lastOption
+case class RandomVisitor(cb: CheckBoard) extends Visitor(cb) {
+  def nextMove(key: Cell): Option[Cell] =
+    Random
+      .shuffle(cb.possibleMoves(key))
+      .lastOption
 }
