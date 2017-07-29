@@ -71,20 +71,32 @@ class CheckBoardSpec extends FunSpec with MustMatchers {
     }
   }
 
-  it("abc") {
+  it("Iterator drop while") {
     val circular = Iterator.continually(List(1, 2, 3, 4)).flatten
-    printf(circular.take(17).mkString(" "))
+
+    circular.dropWhile(_ != 2).drop(1).next() must === (3)
+    circular.dropWhile(_ != 4).drop(1).next() must === (1)
   }
 
   it("RailwayVisitor should work") {
     new RailwayVisitor10(cb) {
-      nextMove((0, 0)).get must ===(3, 0)
-      nextMove((3, 0)).get must ===(6, 0)
+      startWalking((0,0))
+      step().get must ===(3, 0)
+      step().get must ===(6, 0)
+      println(steps)
+    }
 
-      visitAll((0, 0))
+    new RailwayVisitor10(cb) {
+      startWalking((9,9))
+      step().get must ===(6, 9)
+      println(steps)
+    }
+
+    new RailwayVisitor10(cb) {
+      visitAll((9, 9))
       allVisited must ===(true)
 
-      println(steps.size)
+      println(steps)
     }
   }
 
