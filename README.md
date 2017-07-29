@@ -9,6 +9,8 @@ See demo implementation here [https://aafa.github.io/pawns/]()
 #### Random walker
 Walks through the board picking random steps from the list of available ones
 
+Performance is poor and unreliable.
+
 #### Warnsdorf-kind walker 
 Uses "visit cornered places first" heuristic with a fallback to random implementation
 
