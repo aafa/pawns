@@ -1,6 +1,6 @@
 ### Implement pawns that walking through 10*10 board
 
-Task definition [task/Platform-Assignment2.pdf]()
+`Scala.js` was utilized here for UI to provide better demo experience.
 
 See demo implementation here [https://aafa.github.io/pawns/]()
 
@@ -25,5 +25,5 @@ Still some cells are visited several times, so there's a field to improve.
     
     
 ###  Run and test
-- `sbt test` to run test
-- `~fastOptJS` to iterate over scala.js ui updates 
+- `sbt test` to run tests
+- `~fastOptJS` to iterate over scala.js ui updates (see ./pawns/target/scala-2.11/classes/index-dev.html)
