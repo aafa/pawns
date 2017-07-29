@@ -35,22 +35,57 @@ class CheckBoardSpec extends FunSpec with MustMatchers {
   }
 
   it("WarnsdorfVisitor performance") {
-    new WarnsdorfVisitor(cb){
+    new WarnsdorfVisitor(cb) {
       visitAll((0, 0))
       allVisited must ===(true)
 
       println(steps.size)
-      steps.size must be < (10*cellsToVisit )
+      steps.size must be < (10 * cellsToVisit)
     }
 
-    new WarnsdorfVisitor(cb){
+    new WarnsdorfVisitor(cb) {
       visitAll((4, 8))
       allVisited must ===(true)
 
       println(steps.size)
-      steps.size must be < (15*cellsToVisit)
+      steps.size must be < (15 * cellsToVisit)
     }
 
     // complexity nearly linear, within ~O(15*n) for the worst case
   }
+
+  it("should find closed-shape path") {
+    new WarnsdorfVisitor(cb) {
+      visitAll((0, 0))
+      allVisited must ===(true)
+      println(s"$steps; count:${steps.size}")
+
+      steps.remove(0)
+      println(s"$steps; count:${steps.size}")
+
+      while (!allVisited) {
+        step()
+      }
+
+      println(s"$steps; count:${steps.size}")
+    }
+  }
+
+  it("abc") {
+    val circular = Iterator.continually(List(1, 2, 3, 4)).flatten
+    printf(circular.take(17).mkString(" "))
+  }
+
+  it("RailwayVisitor should work") {
+    new RailwayVisitor10(cb) {
+      nextMove((0, 0)).get must ===(3, 0)
+      nextMove((3, 0)).get must ===(6, 0)
+
+      visitAll((0, 0))
+      allVisited must ===(true)
+
+      println(steps.size)
+    }
+  }
+
 }

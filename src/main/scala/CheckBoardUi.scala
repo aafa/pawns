@@ -16,7 +16,7 @@ object CheckBoardUi extends JSApp {
 
   val boxSize = 10
   val cellsCount = boxSize * boxSize
-  val visitor = new WarnsdorfVisitor(CheckBoard(boardSize = boxSize))
+  val visitor = new RailwayVisitor10(CheckBoard(boardSize = boxSize))
 
   var iterator: Int = 0
 
@@ -83,7 +83,7 @@ object CheckBoardUi extends JSApp {
           `class` := "grid-11",
           filler
         ),
-        p("version: 5")
+        p("version: 6")
       ).render
     )
   }
